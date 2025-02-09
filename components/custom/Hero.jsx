@@ -45,9 +45,8 @@ const Hero = () => {
             content: input
         }
 
-        setMessages([msg]);
-        // console.log("Messages------>", msg)
-        // console.log("userDetail", userDetail);
+        await setMessages([msg]);
+        console.log("userDetail", userDetail);
 
         const workspaceId = await CreateWorkspace({
             user: userDetail?._id,
