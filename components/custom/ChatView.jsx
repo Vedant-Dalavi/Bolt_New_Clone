@@ -39,13 +39,23 @@ function ChatView() {
         id && GetWorkspaceData();
     }, [id])
 
+
+
+    useEffect(() => {
+        if (!userDetail) {
+            router.push('/')
+            return
+        }
+    }, [userDetail])
+
+
     // used to et workspace data using workspace id
     const GetWorkspaceData = async () => {
         const result = await convex.query(api.workspace.GetWorkspace, {
             workspaceId: id
         })
         await setMessages(result?.messages || [])
-        console.log("workspace result------>", result);
+        // console.log("workspace result------>", result);
     }
 
     useEffect(() => {
@@ -64,14 +74,14 @@ function ChatView() {
             prompt: PROMPT
         })
 
-        console.log("AI responce result ------->", result.data.result)
+        // console.log("AI responce result ------->", result.data.result)
 
         const aiResp = {
             role: 'ai',
             content: result.data.result
         }
 
-        await setMessages(prev => [...prev, aiResp])
+        setMessages(prev => [...prev, aiResp])
 
 
         await UpdateMessage({
@@ -100,13 +110,14 @@ function ChatView() {
         if (userDetail?.token < 10) {
             toast("You don't have enough token!")
             router.push('/pricing')
-
             return;
         }
         setMessages(prev => [...prev, {
             role: 'user',
             content: input
         }])
+
+        setUserInput("");
     }
 
     return (
@@ -150,6 +161,7 @@ function ChatView() {
                     }}>
                     <div className="flex gap-2">
                         <textarea type="text" placeholder={Lookup.INPUT_PLACEHOLDER}
+                            value={userInput}
                             onChange={(e) => setUserInput(e.target.value)}
                             className="outline-none bg-transparent w-full h-32 max-h-56 resize-none"
                         />

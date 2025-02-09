@@ -46,14 +46,9 @@ const SignInDialog = ({ openDialog, closeDialog }) => {
             if (typeof window !== undefined) {
                 localStorage.setItem('user', JSON.stringify(dbUser[0]))
             }
-            setUserDetail(dbUser[0])
+            await setUserDetail(dbUser[0])
             // save this inside our database 
-            if (userDetail?.token < 10) {
-                toast("You don't have enough token!")
-                router.push('/pricing')
-                closeDialog(false);
-                return
-            }
+            toast.success("Logged In Successfully")
             closeDialog(false);
         },
         onError: errorResponse => console.log(errorResponse),

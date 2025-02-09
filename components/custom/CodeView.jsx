@@ -39,9 +39,9 @@ function CodeView() {
         id && GetFiles();
     }, [id])
 
-    useEffect(() => {
-        setActiveTab('preview')
-    }, [action])
+    // useEffect(() => {
+    //     setActiveTab('preview')
+    // }, [action])
 
     const GetFiles = async () => {
         setLoading(true);
@@ -68,11 +68,12 @@ function CodeView() {
     const GenerateAiCode = async () => {
         setLoading(true);
         const PROMPT = JSON.stringify(messages) + " " + Prompt.CODE_GEN_PROMPT;
+        // console.log("Promt->", PROMPT)
         const result = await axios.post('/api/gen-ai-code', {
             prompt: PROMPT
         })
 
-        console.log(result.data);
+        // console.log("code view result ---->", result.data);
         const aiResp = result.data;
 
         const mergedFiles = { ...Lookup.DEFAULT_FILE, ...aiResp?.files }

@@ -26,7 +26,7 @@ const Hero = () => {
 
         if (!userDetail) {
             setOpenDialog(true);
-            return;
+            // return;
         }
         console.log("Hero section token veirfy ->", userDetail?.token)
 
@@ -45,8 +45,9 @@ const Hero = () => {
             content: input
         }
 
-        await setMessages([msg]);
-        console.log("userDetail", userDetail);
+        setMessages([msg]);
+        // console.log("Messages------>", msg)
+        // console.log("userDetail", userDetail);
 
         const workspaceId = await CreateWorkspace({
             user: userDetail?._id,

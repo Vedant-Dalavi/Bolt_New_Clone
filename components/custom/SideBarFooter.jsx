@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 function SideBarFooter() {
     const router = useRouter();
     const { userDetail, setUserDetail } = useContext(UserDetailContext)
-    const { message, setMessage } = useContext(MessageContext)
+    const { messages, setMessages } = useContext(MessageContext)
     const { toggleSidebar } = useSidebar();
 
     const options = [
@@ -42,7 +42,7 @@ function SideBarFooter() {
             toggleSidebar();
             localStorage.clear();
             setUserDetail(null);
-            setMessage(null);
+            setMessages(null);
             router.push('/')
             return
         }

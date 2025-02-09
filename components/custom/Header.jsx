@@ -1,5 +1,5 @@
 import Image from "next/image";
-import React, { useContext, useEffect } from "react"
+import React, { useContext, useEffect, useState } from "react"
 import { Button } from "../ui/button";
 import Colors from "@/data/Colors";
 import { UserDetailContext } from "@/app/context/UserDetailContext";
@@ -10,6 +10,7 @@ import { ActionContext } from "@/app/context/ActionContext";
 import { ChevronDown, EditIcon, LucideDownload, Rocket, SidebarCloseIcon } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 import { GeminiModelContext } from "@/app/context/GeminiModelContext";
+import SignInDialog from "./SignInDialog";
 
 function Header() {
 
@@ -18,6 +19,8 @@ function Header() {
     const { action, setAction } = useContext(ActionContext)
     const path = usePathname();
     const { geminiModel, setGeminiModel } = useContext(GeminiModelContext);
+    const [openDialog, setOpenDialog] = useState(false);
+
 
     console.log(path?.includes('workspace'))
 
@@ -47,7 +50,7 @@ function Header() {
 
                 <div >
 
-                    {!userDetail && <Image src={'/logo.png'} alt='Logo' width={30} height={30} />}
+                    {!userDetail && <Link href={'/'}><Image src={'/logo.png'} alt='Logo' width={30} height={30} /></Link>}
                     {
                         userDetail && <DropdownMenu>
                             <DropdownMenuTrigger ><Button className=" bg-trasperant hover:bg-gray-800"><Image src={'/logo.png'} alt='Logo' width={30} height={30} /> <ChevronDown width={20} height={20} className="text-white" /></Button></DropdownMenuTrigger>
@@ -69,8 +72,8 @@ function Header() {
 
             {
                 !userDetail ? <div className="flex gap-5">
-                    <Button varient="ghost" > Sign In</Button>
-                    <Button className="text-white" style={{ backgroundColor: Colors.BLUE }}> Get Started</Button>
+                    <Button varient="ghost" onClick={() => setOpenDialog(true)}> Sign In</Button>
+                    <Button className="text-white" style={{ backgroundColor: Colors.BLUE }} onClick={() => setOpenDialog(true)}> Get Started</Button>
                 </div> :
                     <div className="flex gap-4">
                         {
@@ -85,6 +88,8 @@ function Header() {
                         />}
                     </div>
             }
+            <SignInDialog openDialog={openDialog} closeDialog={(v) => setOpenDialog(v)} />
+
         </div>
     )
 };
