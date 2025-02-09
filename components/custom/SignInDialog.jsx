@@ -15,11 +15,15 @@ import axios from "axios";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import uuid4 from "uuid4";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const SignInDialog = ({ openDialog, closeDialog }) => {
 
     const { userDetail, setUserDetail } = useContext(UserDetailContext);
     const CreateUser = useMutation(api.users.CreteUser);
+    const router = useRouter();
+
     const googleLogin = useGoogleLogin({
         onSuccess: async (tokenResponce) => {
             console.log(tokenResponce);
@@ -30,9 +34,9 @@ const SignInDialog = ({ openDialog, closeDialog }) => {
 
             console.log(userInfo);
             const user = userInfo.data;
-            setUserDetail(userInfo?.data)
 
-            await CreateUser({
+
+            const dbUser = await CreateUser({
                 name: user?.name,
                 email: user?.email,
                 picture: user?.picture,
@@ -40,9 +44,16 @@ const SignInDialog = ({ openDialog, closeDialog }) => {
             })
 
             if (typeof window !== undefined) {
-                localStorage.setItem('user', JSON.stringify(user))
+                localStorage.setItem('user', JSON.stringify(dbUser[0]))
             }
+            setUserDetail(dbUser[0])
             // save this inside our database 
+            if (userDetail?.token < 10) {
+                toast("You don't have enough token!")
+                router.push('/pricing')
+                closeDialog(false);
+                return
+            }
             closeDialog(false);
         },
         onError: errorResponse => console.log(errorResponse),

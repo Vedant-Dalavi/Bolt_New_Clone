@@ -12,7 +12,7 @@ export async function POST(req) {
         return NextResponse.json(JSON.parse(resp));
 
     } catch (error) {
-        return NextResponse.json({error:resp})
+        return NextResponse.json({ error: resp })
     }
 
 }

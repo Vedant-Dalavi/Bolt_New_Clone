@@ -10,18 +10,31 @@ import axios from 'axios';
 import { useConvex, useMutation } from 'convex/react';
 import { ArrowRight, Link, Loader2Icon } from 'lucide-react';
 import Image from 'next/image';
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import React, { useContext, useEffect, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
+import { useSidebar } from '../ui/sidebar';
+import { UpdateToken } from '@/convex/users';
+import { toast } from 'sonner';
+
+
+export const countToken = (inputText) => {
+    return inputText.trim().split(/\s+/).filter(word => word).length;
+}
+
 function ChatView() {
 
     const { id } = useParams();
     const convex = useConvex();
     const { userDetail, setUserDetail } = useContext(UserDetailContext)
-    const { messages, setMessages } = useContext(MessageContext);
+    const { messages, setMessages } = useContext(MessageContext) || { messages: [], setMessages: () => { } };;
     const [userInput, setUserInput] = useState();
     const [loading, setLoading] = useState(false);
     const UpdateMessage = useMutation(api.workspace.UpdateMessage);
+    const { toggleSidebar } = useSidebar();
+    const UpdateTokens = useMutation(api.users.UpdateToken)
+    const router = useRouter();
+
     useEffect(() => {
         id && GetWorkspaceData();
     }, [id])
@@ -31,7 +44,7 @@ function ChatView() {
         const result = await convex.query(api.workspace.GetWorkspace, {
             workspaceId: id
         })
-        setMessages(result?.messages)
+        await setMessages(result?.messages || [])
         console.log("workspace result------>", result);
     }
 
@@ -58,17 +71,38 @@ function ChatView() {
             content: result.data.result
         }
 
-        setMessages(prev => [...prev, aiResp])
+        await setMessages(prev => [...prev, aiResp])
+
 
         await UpdateMessage({
             messages: [...messages, aiResp],
             workspaceId: id
         })
-        console.log("Upadated the db workspace")
+
+        const remTokens = Number(userDetail?.token) - Number(countToken(JSON.stringify(aiResp)));
+
+        setUserDetail(prev => ({ ...prev, token: remTokens }))
+
+        const newtokens = await UpdateTokens({
+            token: remTokens,
+            userId: userDetail?._id
+        })
+
+
+
+        // update tokens to database
+
+        console.log("Upadated the db workspace and new tokens are", remTokens)
         setLoading(false);
     }
 
     const onGenerate = (input) => {
+        if (userDetail?.token < 10) {
+            toast("You don't have enough token!")
+            router.push('/pricing')
+
+            return;
+        }
         setMessages(prev => [...prev, {
             role: 'user',
             content: input
@@ -76,8 +110,8 @@ function ChatView() {
     }
 
     return (
-        <div className='relative h-[85vh] w-full flex flex-col'>
-            <div className='flex-1 overflow-y-scroll scrollbar-hide'>
+        <div className='relative h-[87.5vh] w-full flex flex-col p-'>
+            <div className='flex-1 overflow-y-scroll scrollbar-hide rounded-lg'>
                 {
                     messages?.map((msg, index) => (
                         <div key={index}
@@ -96,7 +130,7 @@ function ChatView() {
                 }
 
                 {
-                    loading && <div className='p-3 rounded-lg mb-2 flex gap-2 items-center'
+                    loading && <div className='p-5 rounded-lg mb-2 flex gap-2 items-center'
                         style={{ backgroundColor: Colors.CHAT_BACKGROUND }}
                     >
                         <Loader2Icon className='animate-spin' />
@@ -106,28 +140,32 @@ function ChatView() {
             </div>
 
             {/* input section */}
+            <div className='flex gap-2 items-end'>
 
-            <div className="p-5 border rounded-xl max-w-2xl w-full mt-3 "
 
-                style={{
-                    backgroundColor: Colors.BACKGROUND
-                }}>
-                <div className="flex gap-2">
-                    <textarea type="text" placeholder={Lookup.INPUT_PLACEHOLDER}
-                        onChange={(e) => setUserInput(e.target.value)}
-                        className="outline-none bg-transparent w-full h-32 max-h-56 resize-none"
-                    />
-                    {
-                        userInput && <ArrowRight
-                            onClick={() => onGenerate(userInput)}
-                            className="bg-blue-500 p-2  h-10 w-10 rounded-md cursor-pointer" />
-                    }
+                <div className="p-5 border rounded-xl max-w-2xl w-full mt-3 "
 
+                    style={{
+                        backgroundColor: Colors.BACKGROUND
+                    }}>
+                    <div className="flex gap-2">
+                        <textarea type="text" placeholder={Lookup.INPUT_PLACEHOLDER}
+                            onChange={(e) => setUserInput(e.target.value)}
+                            className="outline-none bg-transparent w-full h-32 max-h-56 resize-none"
+                        />
+                        {
+                            userInput && <ArrowRight
+                                onClick={() => onGenerate(userInput)}
+                                className="bg-blue-500 p-2  h-10 w-10 rounded-md cursor-pointer" />
+                        }
+
+                    </div>
+
+                    <div>
+                        <Link className="h-5 w-5" />
+                    </div>
                 </div>
 
-                <div>
-                    <Link className="h-5 w-5" />
-                </div>
             </div>
         </div>
     )

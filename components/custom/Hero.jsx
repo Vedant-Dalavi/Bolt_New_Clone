@@ -10,6 +10,7 @@ import SignInDialog from "./SignInDialog";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 const Hero = () => {
 
@@ -22,31 +23,44 @@ const Hero = () => {
 
     const onGenerate = async (input) => {
         console.log("Inside the onGenerate function");
-        if (!userDetail?.name) {
+
+        if (!userDetail) {
             setOpenDialog(true);
-            // return;
+            return;
         }
+        console.log("Hero section token veirfy ->", userDetail?.token)
+
+        if (userDetail?.token < 10) {
+            toast("You don't have enough token!")
+            router.push('/pricing')
+            return;
+        }
+
+        // if (userDetail) {
+        //     router.push('/workspace')
+        // }
 
         const msg = {
             role: 'user',
             content: input
         }
 
-        setMessages(msg);
+        await setMessages([msg]);
         console.log("userDetail", userDetail);
 
         const workspaceId = await CreateWorkspace({
-            user: userDetail._id,
+            user: userDetail?._id,
             messages: [msg]
         })
 
         console.log("workspaceID----> ", workspaceId);
+
         router.push('/workspace/' + workspaceId);
 
     }
 
     return (
-        <div className="flex flex-col items-center mt-36  gap-2 ">
+        <div className="flex flex-col justify-center items-center mt-36  gap-2 ">
             <h2 className="font-bold text-4xl">  {Lookup.HERO_HEADING}</h2>
             <p className="text-gray-400 font-medium">{Lookup.HERO_DESC}</p>
 

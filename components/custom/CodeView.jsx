@@ -15,19 +15,33 @@ import { useConvex, useMutation } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { useParams } from 'next/navigation';
 import { Loader2Icon } from 'lucide-react';
+import { countToken } from './ChatView';
+import { UserDetailContext } from '@/app/context/UserDetailContext';
+import SandpackPreviewClient from './SandpackPreviewClient';
+import { ActionContext } from '@/app/context/ActionContext';
 
 
 function CodeView() {
     const { id } = useParams();
+    const { userDetail, setUserDetail } = useContext(UserDetailContext)
+
     const [activeTab, setActiveTab] = useState('code');
     const [files, setFiles] = useState(Lookup?.DEFAULT_FILE)
     const { messages, setMessages } = useContext(MessageContext)
     const UpdateFiles = useMutation(api.workspace.UpdateFiles)
     const convex = useConvex();
     const [loading, setLoading] = useState(false);
+    const UpdateTokens = useMutation(api.users.UpdateToken);
+    const { action, setAction } = useContext(ActionContext)
+
+
     useEffect(() => {
         id && GetFiles();
     }, [id])
+
+    useEffect(() => {
+        setActiveTab('preview')
+    }, [action])
 
     const GetFiles = async () => {
         setLoading(true);
@@ -68,6 +82,16 @@ function CodeView() {
             workspaceId: id,
             files: aiResp?.files
         });
+
+        const remTokens = Number(userDetail?.token) - Number(countToken(JSON.stringify(aiResp)));
+        setUserDetail(prev => ({ ...prev, token: remTokens }))
+
+        const newTokens = await UpdateTokens({
+            userId: userDetail?._id,
+            token: remTokens
+        })
+
+        console.log("Tokens------>", remTokens)
         setLoading(false);
     }
 
@@ -111,7 +135,7 @@ function CodeView() {
                         </>
                         :
                         <>
-                            <SandpackPreview style={{ height: '80vh' }} showNavigator={true} />
+                            <SandpackPreviewClient />
                         </>
                     }
                 </SandpackLayout>
