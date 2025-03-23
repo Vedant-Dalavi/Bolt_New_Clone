@@ -1,7 +1,0 @@
-{
-  "functions": {
-    "api/gen-ai-code/**": {
-      "maxDuration": 30
-    }
-  }
-}
