@@ -54,6 +54,22 @@ const SignInDialog = ({ openDialog, closeDialog }) => {
         onError: errorResponse => console.log(errorResponse),
     });
 
+    const guestSignIn = async () => {
+        const dbUser = await CreateUser({
+            name: "Guest User",
+            email: "guest@mail.com",
+            picture: "https://ui-avatars.com/api/?name=Guest+User",
+            uid: uuid4()
+        })
+        if (typeof window !== undefined) {
+            localStorage.setItem('user', JSON.stringify(dbUser[0]))
+        }
+        await setUserDetail(dbUser[0])
+        // save this inside our database 
+        toast.success("Logged In Successfully")
+        closeDialog(false);
+    }
+
     return (
         <Dialog open={openDialog} onOpenChange={closeDialog}>
             <DialogContent>
@@ -66,6 +82,8 @@ const SignInDialog = ({ openDialog, closeDialog }) => {
                             <Button className="bg-blue-500 text-white hover:bg-blue-400 mt-3"
                                 onClick={googleLogin}
                             >Sign In With Google</Button>
+                            <Button onClick={guestSignIn} className=" hover:bg-gray-400 mt-3">
+                                Sign in as Guest</Button>
                             <p>{Lookup?.SIGNIn_AGREEMENT_TEXT}</p>
                         </div>
                     </DialogDescription>
